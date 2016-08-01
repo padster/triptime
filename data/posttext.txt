@@ -16,7 +16,7 @@
           "message": {
             "mid": "mid.1464848804050:57b9cd332c6690c255",
             "seq": 10,
-            "text": "Help"
+            "text": "1 Hacker way"
           }
         }
       ]

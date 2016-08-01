@@ -78,15 +78,21 @@ func handleMessage(c ctx.Context, e fb.Entry, msg fb.Message) {
     if pos != nil {
         handleNextTrainRequest(c, msg.Sender, pos)
     } else {
-        fromUser := strings.TrimSpace(msg.Message.Text)
-        lowerText := strings.ToLower(fromUser)
+        lowerText := strings.ToLower(strings.TrimSpace(msg.Message.Text))
         if lowerText == "help" || lowerText == "commands" {
             sendResponse(c, helpAction(c, msg))
         } else if strings.HasPrefix(lowerText, "next") {
-            sendResponse(c, nextNLeavesAction(c, msg, strings.TrimSpace(fromUser[4:])))
+            sendResponse(c, nextNLeavesAction(c, msg, strings.TrimSpace(lowerText[4:])))
         } else {
-            if fromUser != "" {
-                sendResponse(c, cannedResponseAction(c, msg, fromUser))
+            cannedResponse := cannedResponseAction(c, msg, lowerText)
+            if cannedResponse != nil {
+                sendResponse(c, *cannedResponse)
+            }
+            posFromText := maybeTextToPosition(c, msg, lowerText)
+            if posFromText != nil {
+                handleNextTrainRequest(c, msg.Sender, posFromText)
+            } else {
+                sendResponse(c, helpAction(c, msg))
             }
         }
     }
