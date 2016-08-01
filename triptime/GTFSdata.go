@@ -1,278 +1,276 @@
 package triptime
 
 import (
-    "encoding/csv"
-    "os"
-    "reflect"
-    "strconv"
+	"encoding/csv"
+	"os"
+	"reflect"
+	"strconv"
 )
 
 // stop_id,stop_code,stop_name,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,platform_code,wheelchair_boarding
 type Stop struct {
-    StopId      string
-    Code        string
-    Name        string
-    Lat         float64
-    Long        float64
-    ZoneId      string
-    StopUrl     string
-    Type        int
-    Parent      string
-    PlatCode    string
-    WChair      int
+	StopId   string
+	Code     string
+	Name     string
+	Lat      float64
+	Long     float64
+	ZoneId   string
+	StopUrl  string
+	Type     int
+	Parent   string
+	PlatCode string
+	WChair   int
 }
 
 // trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type
 type StopTime struct {
-    TripId      string
-    Arrival     string
-    Departure   string
-    StopId      string
-    StopSeq     int
-    PickupType  string // ignore, always 0?
-    DropoffType string // ignore, always 0?
+	TripId      string
+	Arrival     string
+	Departure   string
+	StopId      string
+	StopSeq     int
+	PickupType  string // ignore, always 0?
+	DropoffType string // ignore, always 0?
 }
 
 // route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id,shape_id,wheelchair_accessible,bikes_allowed
 type Trip struct {
-    RouteId     string
-    ServiceId   string
-    TripId      string
-    HeadSign    string
-    ShortName   string
-    DirectionId string
-    ShapeId     string
-    WChair      bool
-    Bikes       bool
+	RouteId     string
+	ServiceId   string
+	TripId      string
+	HeadSign    string
+	ShortName   string
+	DirectionId string
+	ShapeId     string
+	WChair      bool
+	Bikes       bool
 }
 
 // service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
 type ServiceDate struct {
-    ServiceId   string
-    OnMon       bool
-    OnTue       bool
-    OnWed       bool
-    OnThu       bool
-    OnFri       bool
-    OnSat       bool
-    OnSun       bool
-    StartDate   string // ignore
-    EndDate     string // ignore
+	ServiceId string
+	OnMon     bool
+	OnTue     bool
+	OnWed     bool
+	OnThu     bool
+	OnFri     bool
+	OnSat     bool
+	OnSun     bool
+	StartDate string // ignore
+	EndDate   string // ignore
 }
 
 // service_id,date,exception_type
 type ServiceDateException struct {
-    ServiceId       string
-    Date            string // YYYYMMDD
-    ExceptionType   int    // 1 = new service, 2 = old service
+	ServiceId     string
+	Date          string // YYYYMMDD
+	ExceptionType int    // 1 = new service, 2 = old service
 }
 
 // route_id,route_short_name,route_long_name,route_type,route_color
 type Route struct {
-    RouteId         string
-    ShortName       string
-    LongName        string
-    Type            int
-    Color           string
+	RouteId   string
+	ShortName string
+	LongName  string
+	Type      int
+	Color     string
 }
 
 func ReadStops() []Stop {
-    f, err := os.Open("gtfs/stops.txt")
-    defer f.Close()
-    if err != nil {
-        panic("can't open file...")
-    }
-    reader := csv.NewReader(f)
+	f, err := os.Open("gtfs/stops.txt")
+	defer f.Close()
+	if err != nil {
+		panic("can't open file...")
+	}
+	reader := csv.NewReader(f)
 
-    result := []Stop{}
-    for i := 0; ; i++ {
-        if i == 0 {
-            // First row, ignore as it's column headers.
-            reader.Read()
-        } else {
-            row := Stop{}
-            if err := Unmarshal(reader, &row); err != "" {
-                if err == "DONE" {
-                    break
-                }
-                panic(err)
-            }
-            result = append(result, row)
-        }
-    }
-    return result
+	result := []Stop{}
+	for i := 0; ; i++ {
+		if i == 0 {
+			// First row, ignore as it's column headers.
+			reader.Read()
+		} else {
+			row := Stop{}
+			if err := Unmarshal(reader, &row); err != "" {
+				if err == "DONE" {
+					break
+				}
+				panic(err)
+			}
+			result = append(result, row)
+		}
+	}
+	return result
 }
 
 func ReadStopTimes() []StopTime {
-    f, err := os.Open("gtfs/stop_times.txt")
-    defer f.Close()
-    if err != nil {
-        panic("can't open file...")
-    }
-    reader := csv.NewReader(f)
+	f, err := os.Open("gtfs/stop_times.txt")
+	defer f.Close()
+	if err != nil {
+		panic("can't open file...")
+	}
+	reader := csv.NewReader(f)
 
-    result := []StopTime{}
-    for i := 0; ; i++ {
-        if i == 0 {
-            // First row, ignore as it's column headers.
-            reader.Read()
-        } else {
-            row := StopTime{}
-            if err := Unmarshal(reader, &row); err != "" {
-                if err == "DONE" {
-                    break
-                }
-                panic(err)
-            }
-            result = append(result, row)
-        }
-    }
-    return result
+	result := []StopTime{}
+	for i := 0; ; i++ {
+		if i == 0 {
+			// First row, ignore as it's column headers.
+			reader.Read()
+		} else {
+			row := StopTime{}
+			if err := Unmarshal(reader, &row); err != "" {
+				if err == "DONE" {
+					break
+				}
+				panic(err)
+			}
+			result = append(result, row)
+		}
+	}
+	return result
 }
 
 func ReadTrips() []Trip {
-    f, err := os.Open("gtfs/trips.txt")
-    defer f.Close()
-    if err != nil {
-        panic("can't open file...")
-    }
-    reader := csv.NewReader(f)
+	f, err := os.Open("gtfs/trips.txt")
+	defer f.Close()
+	if err != nil {
+		panic("can't open file...")
+	}
+	reader := csv.NewReader(f)
 
-    result := []Trip{}
-    for i := 0; ; i++ {
-        if i == 0 {
-            // First row, ignore as it's column headers.
-            reader.Read()
-        } else {
-            row := Trip{}
-            if err := Unmarshal(reader, &row); err != "" {
-                if err == "DONE" {
-                    break
-                }
-                panic(err)
-            }
-            result = append(result, row)
-        }
-    }
-    return result
+	result := []Trip{}
+	for i := 0; ; i++ {
+		if i == 0 {
+			// First row, ignore as it's column headers.
+			reader.Read()
+		} else {
+			row := Trip{}
+			if err := Unmarshal(reader, &row); err != "" {
+				if err == "DONE" {
+					break
+				}
+				panic(err)
+			}
+			result = append(result, row)
+		}
+	}
+	return result
 }
 
-
 func ReadServiceDates() []ServiceDate {
-    f, err := os.Open("gtfs/calendar.txt")
-    defer f.Close()
-    if err != nil {
-        panic("can't open file...")
-    }
-    reader := csv.NewReader(f)
+	f, err := os.Open("gtfs/calendar.txt")
+	defer f.Close()
+	if err != nil {
+		panic("can't open file...")
+	}
+	reader := csv.NewReader(f)
 
-    result := []ServiceDate{}
-    for i := 0; ; i++ {
-        if i == 0 {
-            // First row, ignore as it's column headers.
-            reader.Read()
-        } else {
-            row := ServiceDate{}
-            if err := Unmarshal(reader, &row); err != "" {
-                if err == "DONE" {
-                    break
-                }
-                panic(err)
-            }
-            result = append(result, row)
-        }
-    }
-    return result
+	result := []ServiceDate{}
+	for i := 0; ; i++ {
+		if i == 0 {
+			// First row, ignore as it's column headers.
+			reader.Read()
+		} else {
+			row := ServiceDate{}
+			if err := Unmarshal(reader, &row); err != "" {
+				if err == "DONE" {
+					break
+				}
+				panic(err)
+			}
+			result = append(result, row)
+		}
+	}
+	return result
 }
 
 func ReadServiceDateExceptions() []ServiceDateException {
-    f, err := os.Open("gtfs/calendar_dates.txt")
-    defer f.Close()
-    if err != nil {
-        panic("can't open file...")
-    }
-    reader := csv.NewReader(f)
+	f, err := os.Open("gtfs/calendar_dates.txt")
+	defer f.Close()
+	if err != nil {
+		panic("can't open file...")
+	}
+	reader := csv.NewReader(f)
 
-    result := []ServiceDateException{}
-    for i := 0; ; i++ {
-        if i == 0 {
-            // First row, ignore as it's column headers.
-            reader.Read()
-        } else {
-            row := ServiceDateException{}
-            if err := Unmarshal(reader, &row); err != "" {
-                if err == "DONE" {
-                    break
-                }
-                panic(err)
-            }
-            result = append(result, row)
-        }
-    }
-    return result
+	result := []ServiceDateException{}
+	for i := 0; ; i++ {
+		if i == 0 {
+			// First row, ignore as it's column headers.
+			reader.Read()
+		} else {
+			row := ServiceDateException{}
+			if err := Unmarshal(reader, &row); err != "" {
+				if err == "DONE" {
+					break
+				}
+				panic(err)
+			}
+			result = append(result, row)
+		}
+	}
+	return result
 }
 
 func ReadRoutes() []Route {
-    f, err := os.Open("gtfs/routes.txt")
-    defer f.Close()
-    if err != nil {
-        panic("can't open file...")
-    }
-    reader := csv.NewReader(f)
+	f, err := os.Open("gtfs/routes.txt")
+	defer f.Close()
+	if err != nil {
+		panic("can't open file...")
+	}
+	reader := csv.NewReader(f)
 
-    result := []Route{}
-    for i := 0; ; i++ {
-        if i == 0 {
-            // First row, ignore as it's column headers.
-            reader.Read()
-        } else {
-            row := Route{}
-            if err := Unmarshal(reader, &row); err != "" {
-                if err == "DONE" {
-                    break
-                }
-                panic(err)
-            }
-            result = append(result, row)
-        }
-    }
-    return result
+	result := []Route{}
+	for i := 0; ; i++ {
+		if i == 0 {
+			// First row, ignore as it's column headers.
+			reader.Read()
+		} else {
+			row := Route{}
+			if err := Unmarshal(reader, &row); err != "" {
+				if err == "DONE" {
+					break
+				}
+				panic(err)
+			}
+			result = append(result, row)
+		}
+	}
+	return result
 }
 
-
 func Unmarshal(reader *csv.Reader, v interface{}) string {
-    record, err := reader.Read()
-    if err != nil {
-        return "DONE"
-    }
-    s := reflect.ValueOf(v).Elem()
-    if s.NumField() != len(record) {
-        return "Field mismatch"
-    }
-    for i := 0; i < s.NumField(); i++ {
-        f := s.Field(i)
-        switch f.Type().String() {
-        case "string":
-            f.SetString(record[i])
-        case "int":
-            ival, err := strconv.ParseInt(record[i], 10, 0)
-            if err != nil {
-                return "Can't parse int"
-            }
-            f.SetInt(ival)
-        case "float64":
-            fval, err := strconv.ParseFloat(record[i], 64)
-            if err != nil {
-                return "Can't parse float"
-            }
-            f.SetFloat(fval)
-        case "bool":
-            f.SetBool(record[i] == "1")
-        default:
-            return "Unknown type: " + f.Type().String()
-        }
-    }
-    return ""
+	record, err := reader.Read()
+	if err != nil {
+		return "DONE"
+	}
+	s := reflect.ValueOf(v).Elem()
+	if s.NumField() != len(record) {
+		return "Field mismatch"
+	}
+	for i := 0; i < s.NumField(); i++ {
+		f := s.Field(i)
+		switch f.Type().String() {
+		case "string":
+			f.SetString(record[i])
+		case "int":
+			ival, err := strconv.ParseInt(record[i], 10, 0)
+			if err != nil {
+				return "Can't parse int"
+			}
+			f.SetInt(ival)
+		case "float64":
+			fval, err := strconv.ParseFloat(record[i], 64)
+			if err != nil {
+				return "Can't parse float"
+			}
+			f.SetFloat(fval)
+		case "bool":
+			f.SetBool(record[i] == "1")
+		default:
+			return "Unknown type: " + f.Type().String()
+		}
+	}
+	return ""
 }
 
 /*

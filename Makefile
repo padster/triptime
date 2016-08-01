@@ -13,3 +13,8 @@ testtext:
 testpostback:
 	curl -X POST -d @data/postback.txt http://localhost:8080/_/verify
 
+checklint:
+	gofmt -d .
+
+fixlint:
+	gofmt -w .
