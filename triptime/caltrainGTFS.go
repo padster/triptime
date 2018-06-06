@@ -8,7 +8,7 @@ import (
 
 	"github.com/padster/triptime/fb"
 
-	// ctx "golang.org/x/net/context"
+	ctx "golang.org/x/net/context"
 	// "google.golang.org/appengine/log"
 )
 
@@ -74,13 +74,12 @@ func NextNTripsFromStop(at Stop, direction string, n int) []NextTripResult {
 			}
 			for i := 0; i < n; i++ {
 				if isBetterStop(stopTime, bestStopTime[i], t) {
+          // Lol, insertion sort.
 					for j := n - 1; j > i; j-- {
 						bestTrip[j] = bestTrip[j-1]
 						bestStopTime[j] = bestStopTime[j-1]
 						stopsAt[j] = stopsAt[j-1]
 					}
-					// log.Infof(c, "Inserting %q at %d", stopTime, i)
-
 					bestTrip[i] = trip
 					bestStopTime[i] = stopTime
 					stopsAt[i] = stopAt
@@ -175,30 +174,25 @@ func TripsForServiceId(id string) []*Trip {
 	return trips
 }
 
-func ClosestStop(at *fb.Coordinates) Stop {
+func ClosestStop(c ctx.Context, at *fb.Coordinates) Stop {
 	bestStop := -1
 	bestDist := 0.0
 	for i, stop := range DATA.Stops {
-		if stop.Type == 1 { // Non-directional. 0 = directional
-			stopAt := fb.Coordinates{stop.Lat, stop.Long}
-			dist := CoordDistKM(at, &stopAt)
-			if bestStop == -1 || dist < bestDist {
-				bestStop = i
-				bestDist = dist
-			}
+    // Note: all stops here are now directional :( Fixed up by calling DirectionalStops
+		stopAt := fb.Coordinates{stop.Lat, stop.Long}
+		dist := CoordDistKM(at, &stopAt)
+		if bestStop == -1 || dist < bestDist {
+			bestStop = i
+			bestDist = dist
 		}
 	}
 	return DATA.Stops[bestStop]
 }
 
 func DirectionalStops(stop Stop, direction string) []Stop {
-	// TODO - index
-	if stop.Type != 1 {
-		panic("Must pass in non-directional stop")
-	}
 	stops := []Stop{}
 	for _, child := range DATA.Stops {
-		if child.Type == 0 && child.Parent == stop.StopId {
+		if child.Type == 0 && child.Name == stop.Name { // Name comparison
 			if direction == "" || direction == child.PlatCode {
 				stops = append(stops, child)
 			}

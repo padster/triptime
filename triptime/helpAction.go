@@ -23,7 +23,8 @@ func helpAction(c ctx.Context, msg fb.Message) fb.OutboundMessage {
 
 func welcomeMessage(msg fb.Message) fb.OutboundMessage {
 	text := "Welcome to Triptime 🚆\n"
-	text += "I don't know where you are, so first please send me your location using the marker ⇓\n"
+	text += "I don't know where you are, so first please send me your "
+	text += "location using the marker, not your live location.\n"
 	return fb.OutboundMessage{
 		msg.Sender,
 		outMessageDataFromText(text),

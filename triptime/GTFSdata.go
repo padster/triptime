@@ -7,11 +7,13 @@ import (
 	"strconv"
 )
 
-// stop_id,stop_code,stop_name,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,platform_code,wheelchair_boarding
+// OLD: stop_id,stop_code,stop_name,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,platform_code,wheelchair_boarding
+// stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type,parent_station,platform_code,wheelchair_boarding
 type Stop struct {
 	StopId   string
 	Code     string
 	Name     string
+  Desc     string
 	Lat      float64
 	Long     float64
 	ZoneId   string
@@ -33,7 +35,8 @@ type StopTime struct {
 	DropoffType string // ignore, always 0?
 }
 
-// route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id,shape_id,wheelchair_accessible,bikes_allowed
+// OLD: route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id,shape_id,wheelchair_accessible,bikes_allowed
+// route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed
 type Trip struct {
 	RouteId     string
 	ServiceId   string
@@ -41,6 +44,7 @@ type Trip struct {
 	HeadSign    string
 	ShortName   string
 	DirectionId string
+  BlockId     string
 	ShapeId     string
 	WChair      bool
 	Bikes       bool
@@ -67,12 +71,15 @@ type ServiceDateException struct {
 	ExceptionType int    // 1 = new service, 2 = old service
 }
 
-// route_id,route_short_name,route_long_name,route_type,route_color
+// OLD: route_id,route_short_name,route_long_name,route_type,route_color
+// route_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color
 type Route struct {
 	RouteId   string
 	ShortName string
 	LongName  string
+  Desc      string
 	Type      int
+  RouteUrl  string
 	Color     string
 }
 

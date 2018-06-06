@@ -1,5 +1,5 @@
 run:
-	goapp serve triptime
+	dev_appserver.py triptime/app.yaml
 
 deploy:
 	appcfg.py -A triptime-1330 -V v1 update triptime/

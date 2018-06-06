@@ -73,28 +73,32 @@ func handleMessage(c ctx.Context, e fb.Entry, msg fb.Message) {
 		return
 	}
 
+	// TODO - clean up, make more pluggable.
 	pos := getCoordinates(msg.Message)
 	if pos != nil {
 		handleNextTrainRequest(c, msg.Sender, pos)
-	} else {
-		lowerText := strings.ToLower(strings.TrimSpace(msg.Message.Text))
-		if lowerText == "help" || lowerText == "commands" {
-			sendResponse(c, helpAction(c, msg))
-		} else if strings.HasPrefix(lowerText, "next") {
-			sendResponse(c, nextNLeavesAction(c, msg, strings.TrimSpace(lowerText[4:])))
-		} else {
-			cannedResponse := cannedResponseAction(c, msg, lowerText)
-			if cannedResponse != nil {
-				sendResponse(c, *cannedResponse)
-			}
-			posFromText := maybeTextToPosition(c, msg, lowerText)
-			if posFromText != nil {
-				handleNextTrainRequest(c, msg.Sender, posFromText)
-			} else {
-				sendResponse(c, helpAction(c, msg))
-			}
-		}
+		return
 	}
+	lowerText := strings.ToLower(strings.TrimSpace(msg.Message.Text))
+	if lowerText == "help" || lowerText == "commands" {
+		sendResponse(c, helpAction(c, msg))
+		return
+	}
+	if strings.HasPrefix(lowerText, "next") {
+		sendResponse(c, nextNLeavesAction(c, msg, strings.TrimSpace(lowerText[4:])))
+		return
+	}
+	cannedResponse := cannedResponseAction(c, msg, lowerText)
+	if cannedResponse != nil {
+		sendResponse(c, *cannedResponse)
+		return
+	}
+	posFromText := maybeTextToPosition(c, msg, lowerText)
+	if posFromText != nil {
+		handleNextTrainRequest(c, msg.Sender, posFromText)
+		return
+	}
+	sendResponse(c, helpAction(c, msg))
 }
 
 func handleListStops(c ctx.Context, msg fb.Message, stopId string, tripId string) {
@@ -138,7 +142,7 @@ func handleListStops(c ctx.Context, msg fb.Message, stopId string, tripId string
 func handleNextTrainRequest(c ctx.Context, user fb.User, pos *fb.Coordinates) {
 	t := getSFTime()
 
-	closest := ClosestStop(pos)
+	closest := ClosestStop(c, pos)
 	SetUserState(c, user.Id, UserState{
 		*pos,
 		closest,
@@ -264,11 +268,11 @@ func policyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte(`TripTime messenger bot privacy policy:
 
-Information provided by each user is stored for only 10 minutes 
+Information provided by each user is stored for only 10 minutes
   in order to remember it during the conversation with the bot.
-Location information (if provided) is used to find local time and nearby transport only, 
-  and accessible only to bot in that 10 minutes, 
-  not shared with others. 
+Location information (if provided) is used to find local time and nearby transport only,
+  and accessible only to bot in that 10 minutes,
+  not shared with others.
 No other details about users are handled.
     `))
 }
